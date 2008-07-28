@@ -38,11 +38,19 @@ class Heroku::Client
 	def upload_authkey(key)
 		put("/user/authkey", key, { 'Content-Type' => 'text/ssh-authkey' })
 	end
+	
+	def upload_data(name, filename)
+		host = "http://" + (ENV["HEROKU_COLLAR_HOST"] || "control.%s.heroku.com")
+		host = host % name
+
+		r = resource('/data', host)
+		r.put :data => File.open(filename, 'rb')
+	end
 
 	##################
 
-	def resource(uri)
-		RestClient::Resource.new(host + uri, user, password)
+	def resource(uri, host=nil)
+		RestClient::Resource.new((host || self.host) + uri, user, password)
 	end
 
 	def get(uri, extra_headers={})    # :nodoc:

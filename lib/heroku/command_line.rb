@@ -50,6 +50,22 @@ class Heroku::CommandLine
 		command_separator = running_on_windows? ? '&&' : ';'
 		system "cd #{name}#{command_separator}rake db:migrate"
 	end
+	
+	def upload_data(args)
+		name, filename = args
+		
+		unless name && filename
+			display "Usage: heroku upload_data <name> <filename>"
+			exit(1)
+		end
+		
+		unless File.file?(filename)
+			display "'#{filename}' is not a file."
+			exit(1)
+		end
+		
+		heroku.upload_data(name, filename)
+	end
 
 	def destroy(args)
 		name = args.shift.strip.downcase rescue ""
@@ -67,8 +83,16 @@ class Heroku::CommandLine
 	def heroku    # :nodoc:
 		@heroku ||= init_heroku
 	end
+	
+	def collar
+		@collar ||= init_collar
+	end
 
 	def init_heroku    # :nodoc:
+		Heroku::Client.new(user, password, ENV['HEROKU_HOST'] || 'heroku.com')
+	end
+
+	def init_collar    # :nodoc:
 		Heroku::Client.new(user, password, ENV['HEROKU_HOST'] || 'heroku.com')
 	end
 
