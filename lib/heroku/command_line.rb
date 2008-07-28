@@ -67,6 +67,17 @@ class Heroku::CommandLine
 		heroku.upload_data(name, filename)
 	end
 
+	def download_data(args)
+		name, _ = args
+		
+		unless name
+			display "Usage: heroku upload_data <name>"
+			exit(1)
+		end
+		
+		heroku.download_data(name)
+	end
+
 	def destroy(args)
 		name = args.shift.strip.downcase rescue ""
 		if name.length == 0

@@ -46,6 +46,22 @@ class Heroku::Client
 		r = resource('/data', host)
 		r.put :data => File.open(filename, 'rb')
 	end
+	
+	def download_data(name)
+		host = "http://" + (ENV["HEROKU_COLLAR_HOST"] || "control.%s.heroku.com")
+		host = host % name
+
+		r = resource('/data', host)
+
+		File.rm('data.yml.gz') rescue nil
+		r.get do |res|
+			open('data.yml.gz', 'wb') do |f|
+				res.read_body do |chunk|
+					f.write(chunk)
+				end
+			end
+		end
+	end
 
 	##################
 
