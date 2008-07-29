@@ -43,8 +43,16 @@ class Heroku::Client
 		host = "http://" + (ENV["HEROKU_COLLAR_HOST"] || "control.%s.heroku.com")
 		host = host % name
 
-		r = resource('/data', host)
-		r.put :data => File.open(filename, 'rb')
+		begin
+			r = resource('/data', host)
+			r.put :data => File.open(filename, 'rb')
+		rescue IOError => e
+			## This is temporary until we can fix the error with the stream
+			## being cut off by nginx (ask Orion)
+			sleep(3) ## try and sleep it off
+			puts "There was a nasty error! #{e.message}"
+			r.put :data => File.open(filename, 'rb')
+		end
 	end
 	
 	def download_data(name)
