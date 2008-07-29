@@ -65,6 +65,7 @@ class Heroku::CommandLine
 		end
 		
 		heroku.upload_data(name, filename)
+		display "success"
 	end
 
 	def download_data(args)
@@ -76,6 +77,7 @@ class Heroku::CommandLine
 		end
 		
 		heroku.download_data(name)
+		display "success"
 	end
 
 	def destroy(args)
