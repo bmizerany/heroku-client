@@ -50,17 +50,19 @@ class Heroku::CommandLine
 		command_separator = running_on_windows? ? '&&' : ';'
 		system "cd #{name}#{command_separator}rake db:migrate"
 	end
-	
+
 	def upload_data(args)
 		name, filename = args
 		
-		unless name && filename
-			display "Usage: heroku upload_data <name> <filename>"
+		filename ||= 'db/data.yml'
+		
+		unless name
+			display "Usage: heroku upload_data <app> [filename]"
 			exit(1)
 		end
 		
 		unless File.file?(filename)
-			display "'#{filename}' is not a file."
+			display "'#{filename}' does not exists"
 			exit(1)
 		end
 		
@@ -72,7 +74,7 @@ class Heroku::CommandLine
 		name, _ = args
 		
 		unless name
-			display "Usage: heroku upload_data <name>"
+			display "Usage: heroku upload_data <app>"
 			exit(1)
 		end
 		
