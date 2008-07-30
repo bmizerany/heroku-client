@@ -207,6 +207,7 @@ describe Heroku::CommandLine do
 			@wrapper.stub!(:write_generic_database_yml)
 			Dir.stub!(:mkdir)
 			File.stub!(:directory?)
+			ENV.stub!(:[]).with('HEROKU_HOST').and_return("heroku.com")
 		end
 
 		it "calls git clone" do
