@@ -45,7 +45,8 @@ class Heroku::Client
 
 		begin
 			r = resource('/data', host)
-			r.put :data => File.open(filename, 'rb')
+			payload = { :data => File.open(filename, 'rb') }
+			r.put payload, heroku_headers
 		rescue IOError => e
 			## This is temporary until we can fix the error with the stream
 			## being cut off by nginx (ask Orion)
@@ -59,10 +60,10 @@ class Heroku::Client
 		host = "http://" + (ENV["HEROKU_COLLAR_HOST"] || "control.%s.heroku.com")
 		host = host % name
 
-		r = resource('/data', host)
-
 		File.rm('data.yml.gz') rescue nil
-		r.get do |res|
+
+		r = resource('/data', host)
+		r.get heroku_headers do |res|
 			open('data.yml.gz', 'wb') do |f|
 				res.read_body do |chunk|
 					f.write(chunk)
@@ -70,7 +71,7 @@ class Heroku::Client
 			end
 		end
 	end
-
+	
 	##################
 
 	def resource(uri, host=nil)

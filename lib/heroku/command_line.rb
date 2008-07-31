@@ -53,9 +53,9 @@ class Heroku::CommandLine
 
 	def upload_data(args)
 		name, filename = args
-		
+				
 		filename ||= 'db/data.yml'
-		
+
 		unless name
 			display "Usage: heroku upload_data <app> [filename]"
 			exit(1)
