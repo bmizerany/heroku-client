@@ -1,6 +1,21 @@
 require 'rubygems'
 require 'rexml/document'
-require 'rest_client'
+require "rest_client"
+
+class RestClient::Payload::Base
+	
+	alias :_read :read
+	
+	def read(b=nil)
+		# STDOUT.print '.'
+		# STDOUT.flush
+		@count ||= 0
+		@count += b.to_i
+		puts @count
+		_read(b)
+	end
+	
+end
 
 # A Ruby class to call the Heroku REST API.  You might use this if you want to
 # manage your Heroku apps from within a Ruby program, such as Capistrano.
@@ -42,17 +57,17 @@ class Heroku::Client
 	def upload_data(name, filename)
 		host = "http://" + (ENV["HEROKU_COLLAR_HOST"] || "control.%s.heroku.com")
 		host = host % name
-
+		
+		r = resource('/', host)
 		begin
-			r = resource('/data', host)
 			payload = { :data => File.open(filename, 'rb') }
-			r.put payload, heroku_headers
-		rescue IOError => e
-			## This is temporary until we can fix the error with the stream
-			## being cut off by nginx (ask Orion)
-			sleep(3) ## try and sleep it off
-			puts "There was a nasty error! #{e.message}"
-			r.put :data => File.open(filename, 'rb')
+			RestClient::Request.timeout(0) do
+				puts "Uplading: #{filename}"
+				r['data'].put payload, heroku_headers
+				puts # start new action on new line
+				puts "Loading data ... (this may take a long time depending on the side of your file)."
+				r['rake'].put 'db:data:load', heroku_headers
+			end
 		end
 	end
 	
@@ -65,8 +80,10 @@ class Heroku::Client
 		r = resource('/data', host)
 		r.get heroku_headers do |res|
 			open('data.yml.gz', 'wb') do |f|
+				puts
 				res.read_body do |chunk|
 					f.write(chunk)
+					print '.'
 				end
 			end
 		end
